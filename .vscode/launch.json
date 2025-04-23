@@ -1,0 +1,10 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Extract audio",
+            "type": "go",
+            "args": ["extract-audio", "input/video1.mp4", "output/audio1.aac"]
+        }
+    ] 
+}
