@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	LoadConfigOrErr()
+
 	op := getOpOrErr()
 	switch op {
 	case "extract-audio":
@@ -48,7 +50,6 @@ func diarize() {
 
 func diarizeWithOpenAIWhisper() {
 	inputFilePath := getInputFilePathOrErr()
-	apiKey := "TODO"
 
 	file, err := os.Open(inputFilePath)
 	if err != nil {
@@ -75,7 +76,7 @@ func diarizeWithOpenAIWhisper() {
 
 	req, _ := http.NewRequest("POST", "https://api.openai.com/v1/audio/transcriptions", &buf)
 
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Authorization", "Bearer "+config.OpenAIApiKey)
 	req.Header.Set("Content-Type", "multipart/form-data")
 
 	client := &http.Client{}
