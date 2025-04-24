@@ -4,7 +4,12 @@
         {
             "name": "Extract audio",
             "type": "go",
-            "args": ["extract-audio", "input/video1.mp4", "output/audio1.aac"]
+            "args": ["extract-audio", "-i", "input/video1.mp4", "-o", "output/audio1.m4a"]
+        },
+        {
+            "name": "Diarize",
+            "type": "go",
+            "args": ["diarize", "-i", "output/audio1.m4a", "-s", "openai-whisper"]
         }
     ] 
 }
