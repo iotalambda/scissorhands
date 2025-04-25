@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/spf13/viper"
 )
@@ -12,19 +12,21 @@ type Config struct {
 
 var config *Config
 
-func LoadConfigOrErr() {
+func LoadConfig() error {
 	v := viper.New()
 	v.SetConfigFile("config.json")
 	v.SetConfigType("json")
 
 	if err := v.ReadInConfig(); err != nil {
-		log.Fatalf("reading the config file failed: %v", err)
+		return fmt.Errorf("reading the config file failed: %v", err)
 	}
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
-		log.Fatalf("unmarshalling the config file failed: %v", err)
+		return fmt.Errorf("unmarshalling the config file failed: %v", err)
 	}
 
 	config = &cfg
+
+	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"slices"
 	"strings"
@@ -10,7 +9,7 @@ import (
 
 func getArgAt(i int) (string, error) {
 	if len(os.Args) <= i {
-		return "", fmt.Errorf("arg at ix %v not provided", i)
+		return "", fmt.Errorf("arg at the ix %v not provided", i)
 	}
 	return os.Args[i], nil
 }
@@ -24,40 +23,40 @@ func getArg(flags ...string) (string, error) {
 	return "", fmt.Errorf("arg with the flag %v not provided", strings.Join(flags, "/"))
 }
 
-func getOpOrErr() string {
+func getOp() (string, error) {
 	op, err := getArgAt(1)
 	if err != nil {
-		log.Fatalf("error getting the operation: %v", err)
+		return "", fmt.Errorf("error getting the operation: %v", err)
 	}
-	return op
+	return op, nil
 }
 
 var inputFilePathFlags = [...]string{"-i", "--input"}
 
-func getInputFilePathOrErr() string {
+func getInputFilePath() (string, error) {
 	inputFilePath, err := getArg(inputFilePathFlags[:]...)
 	if err != nil {
-		log.Fatalf("error getting the input file path: %v", err)
+		return "", fmt.Errorf("get input file path arg: %v", err)
 	}
-	return inputFilePath
+	return inputFilePath, nil
 }
 
 var outputFilePathFlags = [...]string{"-o", "--output"}
 
-func getOutputFilePathOrErr() string {
+func getOutputFilePath() (string, error) {
 	outputFilePath, err := getArg(outputFilePathFlags[:]...)
 	if err != nil {
-		log.Fatalf("error getting the output file path: %v", err)
+		return "", fmt.Errorf("get output file path arg: %v", err)
 	}
-	return outputFilePath
+	return outputFilePath, nil
 }
 
-var diarizeServiceFlags = [...]string{"-s", "--service"}
+var serviceFlags = [...]string{"-s", "--service"}
 
-func getDiarizeServiceOrErr() string {
-	diarizeService, err := getArg(diarizeServiceFlags[:]...)
+func getService() (string, error) {
+	service, err := getArg(serviceFlags[:]...)
 	if err != nil {
-		log.Fatalf("error getting the diarize service: %v", err)
+		return "", fmt.Errorf("get service arg: %v", err)
 	}
-	return diarizeService
+	return service, nil
 }

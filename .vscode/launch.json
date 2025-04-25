@@ -7,9 +7,9 @@
             "args": ["extract-audio", "-i", "input/video1.mp4", "-o", "output/audio1.m4a"]
         },
         {
-            "name": "Diarize",
+            "name": "Segment",
             "type": "go",
-            "args": ["diarize", "-i", "output/audio1.m4a", "-s", "openai-whisper"]
+            "args": ["segment", "-i", "output/audio1.m4a", "-o", "output/whisper1.json", "-s", "openai-whisper"]
         }
     ] 
 }
