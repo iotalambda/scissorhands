@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Extract audio",
+            "name": "Extract M4A",
             "type": "go",
             "request": "launch",
             "mode": "auto",
@@ -11,13 +11,31 @@
             "args": ["extract-audio", "-i", "input/video1.mp4", "-o", "output/audio1.m4a"]
         },
         {
-            "name": "Segment",
+            "name": "Extract AAC",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "cwd": "${workspaceFolder}",
+            "args": ["extract-audio", "-i", "input/video1.mp4", "-o", "output/audio1.aac"]
+        },
+        {
+            "name": "Segment M4A with Whisper",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "cwd": "${workspaceFolder}",
             "args": ["segment", "-i", "output/audio1.m4a", "-o", "output/whisper1.json", "-s", "openai-whisper"]
+        },
+        {
+            "name": "Diarize AAC with Azure Speech",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "cwd": "${workspaceFolder}",
+            "args": ["diarize", "-i", "output/audio1.aac", "-o", "output/speech1.json", "-s", "azure-speech"]
         }
     ] 
 }

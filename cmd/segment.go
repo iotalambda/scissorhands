@@ -74,6 +74,7 @@ func segmentWithOpenAIWhisper() error {
 		return fmt.Errorf("write req body: %v", err)
 	}
 
+	// API Docs: https://platform.openai.com/docs/guides/speech-to-text?lang=curl
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/audio/transcriptions", &reqBuf)
 	if err != nil {
 		return fmt.Errorf("create req: %v", err)

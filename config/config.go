@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	OpenAIApiKey string `json:"openAIApiKey"`
+	AzureSpeechServiceKey string `json:"azureSpeechServiceKey"`
+	OpenAIApiKey          string `json:"openAIApiKey"`
 }
 
 var Global *Config

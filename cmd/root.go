@@ -8,6 +8,7 @@ import (
 )
 
 var input string
+var maxSpeakers int
 var output string
 var service string
 
