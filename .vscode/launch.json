@@ -4,11 +4,19 @@
         {
             "name": "Extract audio",
             "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "cwd": "${workspaceFolder}",
             "args": ["extract-audio", "-i", "input/video1.mp4", "-o", "output/audio1.m4a"]
         },
         {
             "name": "Segment",
             "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "cwd": "${workspaceFolder}",
             "args": ["segment", "-i", "output/audio1.m4a", "-o", "output/whisper1.json", "-s", "openai-whisper"]
         }
     ] 

@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"bytes"
@@ -7,97 +7,45 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"os/exec"
+	"scissorhands/config"
+
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	err := run()
-	if err != nil {
-		panic(err)
-	}
-}
-
-func run() error {
-	if err := LoadConfig(); err != nil {
-		return err
-	}
-
-	op, err := getOp()
-	if err != nil {
-		return err
-	}
-
-	switch op {
-	case "extract-audio":
-		return extractAudio()
-	case "segment":
-		return segment()
-	default:
-		return fmt.Errorf("operation `%v` not recognized", op)
-	}
-}
-
-func extractAudio() error {
-	inputFilePath, err := getInputFilePath()
-	if err != nil {
-		return err
-	}
-
-	outputFilePath, err := getOutputFilePath()
-	if err != nil {
-		return err
-	}
-
-	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-vn", "-acodec", "copy", outputFilePath, "-y")
-	// cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("extract audio with ffmpeg: %v", err)
-	}
-
-	return nil
+var segmentCmd = &cobra.Command{
+	Use:   "segment",
+	Short: "Segment an audio file by words",
+	Run: func(_ *cobra.Command, _ []string) {
+		if err := segment(); err != nil {
+			panic(err)
+		}
+	},
 }
 
 func segment() error {
-	segmentService, err := getService()
-	if err != nil {
-		return err
-	}
-
-	switch segmentService {
+	switch service {
 	case "openai-whisper":
 		if err := segmentWithOpenAIWhisper(); err != nil {
 			return fmt.Errorf("segment with OpenAI Whisper: %v", err)
 		}
 	default:
-		return fmt.Errorf("segment service `%v` not recognized", segmentService)
+		return fmt.Errorf("service `%v` not recognized", service)
 	}
-
 	return nil
 }
 
 func segmentWithOpenAIWhisper() error {
-	inputFilePath, err := getInputFilePath()
-	if err != nil {
-		return err
-	}
-
-	outputFilePath, err := getOutputFilePath()
-	if err != nil {
-		return err
-	}
-
 	var reqBuf bytes.Buffer
 	w := multipart.NewWriter(&reqBuf)
 	defer w.Close()
 
-	file, err := os.Open(inputFilePath)
+	file, err := os.Open(input)
 	if err != nil {
 		return fmt.Errorf("open input file: %v", err)
 	}
 	defer file.Close()
 
-	part, err := w.CreateFormFile("file", inputFilePath)
+	part, err := w.CreateFormFile("file", input)
 	if err != nil {
 		return fmt.Errorf("attach input file (1): %v", err)
 	}
@@ -131,7 +79,7 @@ func segmentWithOpenAIWhisper() error {
 		return fmt.Errorf("create req: %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+config.OpenAIApiKey)
+	req.Header.Set("Authorization", "Bearer "+config.Global.OpenAIApiKey)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	client := &http.Client{}
@@ -146,7 +94,20 @@ func segmentWithOpenAIWhisper() error {
 		return fmt.Errorf("read res body: %v", err)
 	}
 
-	os.WriteFile(outputFilePath, resBody, 0644)
+	os.WriteFile(output, resBody, 0644)
 
 	return nil
+}
+
+func init() {
+	rootCmd.AddCommand(segmentCmd)
+
+	segmentCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	segmentCmd.MarkFlagRequired("input")
+
+	segmentCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	segmentCmd.MarkFlagRequired("output")
+
+	segmentCmd.Flags().StringVarP(&service, "service", "s", "", "Service to use for segmentation. Allowed values: openai-whisper.")
+	segmentCmd.MarkFlagRequired("service")
 }

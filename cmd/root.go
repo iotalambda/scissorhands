@@ -1,0 +1,26 @@
+package cmd
+
+import (
+	"log"
+	"scissorhands/config"
+
+	"github.com/spf13/cobra"
+)
+
+var input string
+var output string
+var service string
+
+var rootCmd = &cobra.Command{
+	Use:   "scissorhands",
+	Short: "A CLI tool for smart video editing",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		return config.InitConfig()
+	},
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatalln(err)
+	}
+}

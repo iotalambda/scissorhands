@@ -1,3 +1,4 @@
 input/
 output/
 config.json
+__debug*

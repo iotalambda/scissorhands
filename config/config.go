@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ type Config struct {
 	OpenAIApiKey string `json:"openAIApiKey"`
 }
 
-var config *Config
+var Global *Config
 
-func LoadConfig() error {
+func InitConfig() error {
 	v := viper.New()
 	v.SetConfigFile("config.json")
 	v.SetConfigType("json")
@@ -21,12 +21,9 @@ func LoadConfig() error {
 		return fmt.Errorf("reading the config file failed: %v", err)
 	}
 
-	var cfg Config
-	if err := v.Unmarshal(&cfg); err != nil {
+	if err := v.Unmarshal(&Global); err != nil {
 		return fmt.Errorf("unmarshalling the config file failed: %v", err)
 	}
-
-	config = &cfg
 
 	return nil
 }
