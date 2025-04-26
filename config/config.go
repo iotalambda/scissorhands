@@ -19,11 +19,11 @@ func InitConfig() error {
 	v.SetConfigType("json")
 
 	if err := v.ReadInConfig(); err != nil {
-		return fmt.Errorf("reading the config file failed: %v", err)
+		return fmt.Errorf("read the config file: %v", err)
 	}
 
 	if err := v.Unmarshal(&Global); err != nil {
-		return fmt.Errorf("unmarshalling the config file failed: %v", err)
+		return fmt.Errorf("unmarshal the config file: %v", err)
 	}
 
 	return nil

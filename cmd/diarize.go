@@ -16,10 +16,8 @@ import (
 var diarizeCmd = &cobra.Command{
 	Use:   "diarize",
 	Short: "Diarize an audio file by speakers",
-	Run: func(_ *cobra.Command, _ []string) {
-		if err := diarize(); err != nil {
-			panic(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return diarize()
 	},
 }
 
@@ -30,7 +28,7 @@ func diarize() error {
 			return fmt.Errorf("diarize with Azure Speech Service: %v", err)
 		}
 	default:
-		return fmt.Errorf("service `%v` not recognized", service)
+		return fmt.Errorf("unrecognized service: %v", service)
 	}
 	return nil
 }

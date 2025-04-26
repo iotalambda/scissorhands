@@ -15,10 +15,8 @@ import (
 var segmentCmd = &cobra.Command{
 	Use:   "segment",
 	Short: "Segment an audio file by words",
-	Run: func(_ *cobra.Command, _ []string) {
-		if err := segment(); err != nil {
-			panic(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return segment()
 	},
 }
 
@@ -29,7 +27,7 @@ func segment() error {
 			return fmt.Errorf("segment with OpenAI Whisper: %v", err)
 		}
 	default:
-		return fmt.Errorf("service `%v` not recognized", service)
+		return fmt.Errorf("unrecognized service: %v", service)
 	}
 	return nil
 }
