@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"scissorhands/config"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -25,4 +27,8 @@ func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func flagsRequiredError(flags ...string) error {
+	return fmt.Errorf("flags required: %v", strings.Join(flags, ", "))
 }

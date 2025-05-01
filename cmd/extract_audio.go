@@ -10,10 +10,8 @@ import (
 var extractAudioCmd = &cobra.Command{
 	Use:   "extract-audio",
 	Short: "Extract audio from an input file",
-	Run: func(_ *cobra.Command, _ []string) {
-		if err := extractAudio(); err != nil {
-			panic(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return extractAudio()
 	},
 }
 

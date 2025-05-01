@@ -11,6 +11,15 @@
             "args": ["prompt", "-i", "input/v1.mp4", "-o", "output/v1_narratorremoved.mp4", "-s", "openai-gpt4o", "-m", "\"Can you remove all narrator segments from the video, please.\""]
         },
         {
+            "name": "Screenshot base64",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "cwd": "${workspaceFolder}",
+            "args": ["screenshot", "-i", "input/v1.mp4", "-s", "00:00:10.500", "-t", "file", "-o", "output/v1_screenshot.jpeg"]
+        },
+        {
             "name": "Extract M4A",
             "type": "go",
             "request": "launch",
