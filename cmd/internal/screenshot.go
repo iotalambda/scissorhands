@@ -27,7 +27,7 @@ func screenshot() error {
 		cmdArgs = append(cmdArgs, "-f", "image2", "-")
 	case "file":
 		if output == "" {
-			return flagsRequiredError("--output")
+			return fmt.Errorf("flag required: output")
 		}
 		cmdArgs = append(cmdArgs, output)
 	default:

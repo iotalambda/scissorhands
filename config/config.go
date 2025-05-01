@@ -1,4 +1,4 @@
-package stuff
+package config
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ type Config struct {
 	OpenAIApiKey          string `json:"openAIApiKey"`
 }
 
-var GlobalConfig *Config
+var Global *Config
 
 func InitConfig() error {
 	v := viper.New()
@@ -22,7 +22,7 @@ func InitConfig() error {
 		return fmt.Errorf("read the config file: %v", err)
 	}
 
-	if err := v.Unmarshal(&GlobalConfig); err != nil {
+	if err := v.Unmarshal(&Global); err != nil {
 		return fmt.Errorf("unmarshal the config file: %v", err)
 	}
 

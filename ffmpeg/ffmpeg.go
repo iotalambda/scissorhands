@@ -1,4 +1,4 @@
-package stuff
+package ffmpeg
 
 import (
 	"bytes"
@@ -9,21 +9,21 @@ import (
 	"strings"
 )
 
-func FfmpegExtractAudio(inputFilePath string, outputFilePath string) error {
+func ExtractAudio(inputFilePath string, outputFilePath string) error {
 	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-vn", "-acodec", "copy", outputFilePath, "-y")
 	// cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("ffmpeg extract audio: %v", err)
+		return fmt.Errorf("ffmpeg cmd: %v", err)
 	}
 	return nil
 }
 
-func FfprobeDurationMs(inputFilePath string) (int, error) {
+func DurationMs(inputFilePath string) (int, error) {
 	cmd := exec.Command("ffprobe", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", inputFilePath)
 	// cmd.Stderr = os.Stderr
 	outBytes, err := cmd.Output()
 	if err != nil {
-		return 0, fmt.Errorf("ffprobe duration: %v", err)
+		return 0, fmt.Errorf("ffprobe cmd: %v", err)
 	}
 
 	outStr := strings.Split(string(outBytes), "\n")[0]
@@ -45,13 +45,13 @@ func MsToSeek(ms int) string {
 	return ssTgt
 }
 
-func FfmpegScreenshot(ss string, inputFilePath string) (string, error) {
+func Screenshot(ss string, inputFilePath string) (string, error) {
 	cmd := exec.Command("ffmpeg", "-ss", ss, "-i", inputFilePath, "-vframes", "1", "-f", "image2", "-")
 	// cmd.Stderr = os.Stderr
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("ffmpeg: %v", err)
+		return "", fmt.Errorf("ffmpeg cmd: %v", err)
 	}
 	url := "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(out.Bytes())
 	return url, nil

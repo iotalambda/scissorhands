@@ -1,4 +1,4 @@
-package stuff
+package cache
 
 import (
 	"crypto/md5"
@@ -11,17 +11,17 @@ import (
 
 const BaseCacheDirPath = ".scissorhandscache"
 
-func CalculateCacheDirPath(inputFilePath string) (string, error) {
-	file, err := os.Open(inputFilePath)
+func CalculateCacheDirPath(srcPath string) (string, error) {
+	file, err := os.Open(srcPath)
 	if err != nil {
-		return "", fmt.Errorf("open input file: %v", err)
+		return "", fmt.Errorf("open source file: %v", err)
 	}
 	defer file.Close()
 
 	hash := md5.New()
 
 	if _, err := io.Copy(hash, file); err != nil {
-		return "", fmt.Errorf("buffer input file: %v", err)
+		return "", fmt.Errorf("buffer source file: %v", err)
 	}
 
 	hashBytes := hash.Sum(nil)[:]
@@ -32,8 +32,8 @@ func CalculateCacheDirPath(inputFilePath string) (string, error) {
 	return cacheDirPath, nil
 }
 
-func EnsureCacheDir(inputFilePath string) (string, error) {
-	cacheDirPath, err := CalculateCacheDirPath(inputFilePath)
+func EnsureCacheDir(pathInput string) (string, error) {
+	cacheDirPath, err := CalculateCacheDirPath(pathInput)
 	if err != nil {
 		return "", fmt.Errorf("calculate cache dir path: %v", err)
 	}

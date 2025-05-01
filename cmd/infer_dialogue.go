@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"scissorhands/stuff"
+	"scissorhands/azspeech"
+	"scissorhands/cache"
+	"scissorhands/ffmpeg"
+	"scissorhands/sc"
 
 	"github.com/spf13/cobra"
 )
@@ -18,73 +21,85 @@ var inferDialogueCmd = &cobra.Command{
 }
 
 func inferDialogue() error {
-	cacheDirPath, err := stuff.EnsureCacheDir(input)
+	cacheDirPath, err := cache.EnsureCacheDir(input)
 	if err != nil {
 		return fmt.Errorf("ensure cache dir: %v", err)
 	}
 
-	audioFilePath := filepath.Join(cacheDirPath, "audio.aac")
-	_, err = os.Stat(audioFilePath)
+	audioPath := filepath.Join(cacheDirPath, "audio.aac")
+	_, err = os.Stat(audioPath)
 	if os.IsNotExist(err) {
-		if err = stuff.FfmpegExtractAudio(input, audioFilePath); err != nil {
+		if err = ffmpeg.ExtractAudio(input, audioPath); err != nil {
 			return fmt.Errorf("ffmpeg extract audio: %v", err)
 		}
 	} else if err != nil {
 		return fmt.Errorf("audio file stat: %v", err)
 	}
 
-	azureSpeechDiarizationFilePath := filepath.Join(cacheDirPath, "azure_speech_diarization.json")
-	_, err = os.Stat(azureSpeechDiarizationFilePath)
+	azureSpeechDiarizationPath := filepath.Join(cacheDirPath, "azure_speech_diarization.json")
+	_, err = os.Stat(azureSpeechDiarizationPath)
+	var azureSpeechDiarization *azspeech.Diarization
 	if os.IsNotExist(err) {
-		if err = stuff.AzureSpeechDiarize(audioFilePath, azureSpeechDiarizationFilePath, 5); err != nil {
+		azureSpeechDiarization, err = azspeech.Diarize(audioPath, 5)
+		if err != nil {
 			return fmt.Errorf("azure speech diarize: %v", err)
 		}
+		azureSpeechDiarization.Write(azureSpeechDiarizationPath)
 	} else if err != nil {
 		return fmt.Errorf("azure speech diarization file stat: %v", err)
+	} else {
+		azureSpeechDiarization, err = azspeech.ReadDiarization(azureSpeechDiarizationPath)
+		if err != nil {
+			return fmt.Errorf("azure speech read diarization: %v", err)
+		}
 	}
 
-	scissorhandsDiarizationFilePath := filepath.Join(cacheDirPath, "scissorhands_diarization.json")
-	_, err = os.Stat(scissorhandsDiarizationFilePath)
+	scissorhandsDiarizationPath := filepath.Join(cacheDirPath, "scissorhands_diarization.json")
+	_, err = os.Stat(scissorhandsDiarizationPath)
+	var scissorhandsDiarization *sc.Diarization
 	if os.IsNotExist(err) {
-		azureSpeechDiarizationFile, err := stuff.AzureSpeechDiarizationFileRead(azureSpeechDiarizationFilePath)
-		if err != nil {
-			return fmt.Errorf("read azure speech diarization file: %v", err)
-		}
-
-		scissorhandsDiarizationFile, err := azureSpeechDiarizationFile.MapToScissorhandsDiarization()
+		scissorhandsDiarization, err = azureSpeechDiarization.MapToScissorhands()
 		if err != nil {
 			return fmt.Errorf("map azure speech to scissorhands diarization file: %v", err)
 		}
 
 		// Clear Azure Speech speaker information. It's unreliable.
-		for pIx := range scissorhandsDiarizationFile.Phrases {
-			p := &scissorhandsDiarizationFile.Phrases[pIx]
+		for pIx := range scissorhandsDiarization.Phrases {
+			p := &scissorhandsDiarization.Phrases[pIx]
 			p.Speaker = ""
 		}
 
-		if err = scissorhandsDiarizationFile.Write(scissorhandsDiarizationFilePath); err != nil {
+		if err = scissorhandsDiarization.Write(scissorhandsDiarizationPath); err != nil {
 			return fmt.Errorf("write scissorhands diarization file: %v", err)
 		}
 
 	} else if err != nil {
 		return fmt.Errorf("scissorhands diarization file stat: %v", err)
+	} else {
+		scissorhandsDiarization, err = sc.ReadDiarization(scissorhandsDiarizationPath)
+		if err != nil {
+			return fmt.Errorf("scissorhands read diarization: %v", err)
+		}
 	}
 
-	durationMs, err := stuff.FfprobeDurationMs(input)
+	durationMs, err := ffmpeg.DurationMs(input)
 	if err != nil {
 		return fmt.Errorf("ffprobe duration ms: %v", err)
 	}
 
 	nScreenshots := 10
+	htmlStr := "<html>"
 	for i := range nScreenshots {
 		timeScreenshotMs := (durationMs / nScreenshots) * i
-		timeScreenshotSs := stuff.MsToSeek(timeScreenshotMs)
-		screenshot, err := stuff.FfmpegScreenshot(timeScreenshotSs, input)
+		timeScreenshotSs := ffmpeg.MsToSeek(timeScreenshotMs)
+		screenshot, err := ffmpeg.Screenshot(timeScreenshotSs, input)
 		if err != nil {
 			return fmt.Errorf("ffmpeg screenshot %v: %v", i, err)
 		}
-		fmt.Println(screenshot)
+		htmlStr += fmt.Sprintf("<br/><img src=\"%v\" />", screenshot)
 	}
+	htmlStr += "</html>"
+	//os.WriteFile(filepath.Join(".temp", "output", "site.html"), []byte(htmlStr), 0644)
 
 	return nil
 }

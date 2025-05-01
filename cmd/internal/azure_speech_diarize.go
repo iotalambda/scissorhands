@@ -1,7 +1,8 @@
 package internal
 
 import (
-	"scissorhands/stuff"
+	"fmt"
+	"scissorhands/azspeech"
 
 	"github.com/spf13/cobra"
 )
@@ -10,7 +11,14 @@ var AzureSpeechDiarizeCmd = &cobra.Command{
 	Use:   "azure-speech-diarize",
 	Short: "Diarize an audio file by speakers",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return stuff.AzureSpeechDiarize(input, output, maxSpeakers)
+		d, err := azspeech.Diarize(input, maxSpeakers)
+		if err != nil {
+			return fmt.Errorf("diarize: %v", err)
+		}
+		if err = d.Write(output); err != nil {
+			return fmt.Errorf("write: %v", err)
+		}
+		return nil
 	},
 }
 

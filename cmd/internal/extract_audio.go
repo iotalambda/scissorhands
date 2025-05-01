@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"scissorhands/stuff"
+	"scissorhands/ffmpeg"
 
 	"github.com/spf13/cobra"
 )
@@ -10,7 +10,7 @@ var ExtractAudioCmd = &cobra.Command{
 	Use:   "extract-audio",
 	Short: "Extract audio from an input file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return stuff.FfmpegExtractAudio(input, output)
+		return ffmpeg.ExtractAudio(input, output)
 	},
 }
 
