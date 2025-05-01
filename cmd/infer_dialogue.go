@@ -56,6 +56,7 @@ func inferDialogue() error {
 			return fmt.Errorf("map azure speech to scissorhands diarization file: %v", err)
 		}
 
+		// Clear Azure Speech speaker information. It's unreliable.
 		for pIx := range scissorhandsDiarizationFile.Phrases {
 			p := &scissorhandsDiarizationFile.Phrases[pIx]
 			p.Speaker = ""
@@ -67,6 +68,22 @@ func inferDialogue() error {
 
 	} else if err != nil {
 		return fmt.Errorf("scissorhands diarization file stat: %v", err)
+	}
+
+	durationMs, err := stuff.FfprobeDurationMs(input)
+	if err != nil {
+		return fmt.Errorf("ffprobe duration ms: %v", err)
+	}
+
+	nScreenshots := 10
+	for i := range nScreenshots {
+		timeScreenshotMs := (durationMs / nScreenshots) * i
+		timeScreenshotSs := stuff.MsToSeek(timeScreenshotMs)
+		screenshot, err := stuff.FfmpegScreenshot(timeScreenshotSs, input)
+		if err != nil {
+			return fmt.Errorf("ffmpeg screenshot %v: %v", i, err)
+		}
+		fmt.Println(screenshot)
 	}
 
 	return nil
