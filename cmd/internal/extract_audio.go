@@ -1,8 +1,7 @@
 package internal
 
 import (
-	"fmt"
-	"os/exec"
+	"scissorhands/stuff"
 
 	"github.com/spf13/cobra"
 )
@@ -11,18 +10,8 @@ var ExtractAudioCmd = &cobra.Command{
 	Use:   "extract-audio",
 	Short: "Extract audio from an input file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return extractAudio()
+		return stuff.FfmpegExtractAudio(input, output)
 	},
-}
-
-func extractAudio() error {
-	cmd := exec.Command("ffmpeg", "-i", input, "-vn", "-acodec", "copy", output, "-y")
-	// cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("extract audio with ffmpeg: %v", err)
-	}
-	return nil
 }
 
 func init() {

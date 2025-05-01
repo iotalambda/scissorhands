@@ -33,7 +33,7 @@ func prompt() error {
 }
 
 func promptWithOpenAIGPT4o() error {
-	client := openai.NewClient(option.WithAPIKey(stuff.Global.OpenAIApiKey))
+	client := openai.NewClient(option.WithAPIKey(stuff.GlobalConfig.OpenAIApiKey))
 	ctx := context.Background()
 	question := "Can you list the files and directories in the `/workspaces` directory, please."
 	fmt.Println("YOU> " + question)

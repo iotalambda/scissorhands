@@ -66,7 +66,7 @@ func openAIWhisperSegment() error {
 		return fmt.Errorf("create req: %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+stuff.Global.OpenAIApiKey)
+	req.Header.Set("Authorization", "Bearer "+stuff.GlobalConfig.OpenAIApiKey)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	client := &http.Client{}

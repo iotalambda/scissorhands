@@ -39,19 +39,30 @@ func EnsureCacheDir(inputFilePath string) (string, error) {
 	}
 
 	info, err := os.Stat(cacheDirPath)
-	if err != nil {
-		return "", fmt.Errorf("cache dir path stat: %v", err)
-	}
 
-	if os.IsExist(err) {
-		if !info.IsDir() {
-			return "", fmt.Errorf("cache dir path is not a dir: %v", cacheDirPath)
-		}
-	} else {
+	if os.IsNotExist(err) {
 		if err = os.MkdirAll(cacheDirPath, 0755); err != nil {
 			return "", fmt.Errorf("make cache dir: %v", err)
+		}
+	} else if err != nil {
+		return "", fmt.Errorf("cache dir path stat: %v", err)
+	} else {
+		if !info.IsDir() {
+			return "", fmt.Errorf("cache dir path is not a dir: %v", cacheDirPath)
 		}
 	}
 
 	return cacheDirPath, nil
+}
+
+func EnsureCached(cachedFilePath string, create func() error) error {
+	_, err := os.Stat(cachedFilePath)
+	if os.IsNotExist(err) {
+		if err = create(); err != nil {
+			return fmt.Errorf("ensure cached create: %v", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("ensure cached stat: %v", err)
+	}
+	return nil
 }
