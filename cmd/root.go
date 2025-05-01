@@ -1,19 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
+	internal "scissorhands/cmd/internal"
 	"scissorhands/stuff"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
-
-var input string
-var maxSpeakers int
-var message string
-var output string
-var service string
 
 var rootCmd = &cobra.Command{
 	Use:   "scissorhands",
@@ -29,6 +22,12 @@ func Execute() {
 	}
 }
 
-func flagsRequiredError(flags ...string) error {
-	return fmt.Errorf("flags required: %v", strings.Join(flags, ", "))
+func init() {
+	rootCmd.AddCommand(inferDialogueCmd)
+
+	rootCmd.AddCommand(internal.AzureSpeechDiarizeCmd)
+	rootCmd.AddCommand(internal.ExtractAudioCmd)
+	rootCmd.AddCommand(internal.OpenAIWhisperSegmentCmd)
+	rootCmd.AddCommand(internal.PromptCmd)
+	rootCmd.AddCommand(internal.ScreenshotCmd)
 }

@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var promptCmd = &cobra.Command{
+var PromptCmd = &cobra.Command{
 	Use:   "prompt",
 	Short: "Let an LLM decide the actions to take",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -118,17 +118,15 @@ func promptWithOpenAIGPT4o() error {
 }
 
 func init() {
-	rootCmd.AddCommand(promptCmd)
+	PromptCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	PromptCmd.MarkFlagRequired("input")
 
-	promptCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	promptCmd.MarkFlagRequired("input")
+	PromptCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	PromptCmd.MarkFlagRequired("output")
 
-	promptCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-	promptCmd.MarkFlagRequired("output")
+	PromptCmd.Flags().StringVarP(&message, "message", "m", "", "Prompt message.")
+	PromptCmd.MarkFlagRequired("message")
 
-	promptCmd.Flags().StringVarP(&message, "message", "m", "", "Prompt message.")
-	promptCmd.MarkFlagRequired("message")
-
-	promptCmd.Flags().StringVarP(&service, "service", "s", "", "The LLM to use. Allowed values: openai-gpt4o.")
-	promptCmd.MarkFlagRequired("service")
+	PromptCmd.Flags().StringVarP(&service, "service", "s", "", "The LLM to use. Allowed values: openai-gpt4o.")
+	PromptCmd.MarkFlagRequired("service")
 }

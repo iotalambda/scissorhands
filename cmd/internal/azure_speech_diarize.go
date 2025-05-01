@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var azureSpeechDiarizeCmd = &cobra.Command{
+var AzureSpeechDiarizeCmd = &cobra.Command{
 	Use:   "azure-speech-diarize",
 	Short: "Diarize an audio file by speakers",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -93,13 +93,11 @@ func azureSpeechDiarize() error {
 }
 
 func init() {
-	rootCmd.AddCommand(azureSpeechDiarizeCmd)
+	AzureSpeechDiarizeCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	AzureSpeechDiarizeCmd.MarkFlagRequired("input")
 
-	azureSpeechDiarizeCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	azureSpeechDiarizeCmd.MarkFlagRequired("input")
+	AzureSpeechDiarizeCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	AzureSpeechDiarizeCmd.MarkFlagRequired("output")
 
-	azureSpeechDiarizeCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-	azureSpeechDiarizeCmd.MarkFlagRequired("output")
-
-	azureSpeechDiarizeCmd.Flags().IntVarP(&maxSpeakers, "max-speakers", "m", 5, "Maximum number of possible speakers to evaluate.")
+	AzureSpeechDiarizeCmd.Flags().IntVarP(&maxSpeakers, "max-speakers", "m", 5, "Maximum number of possible speakers to evaluate.")
 }

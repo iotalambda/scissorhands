@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var openAIWhisperSegmentCmd = &cobra.Command{
+var OpenAIWhisperSegmentCmd = &cobra.Command{
 	Use:   "openai-whisper-segment",
 	Short: "Segment an audio file by words",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -87,11 +87,9 @@ func openAIWhisperSegment() error {
 }
 
 func init() {
-	rootCmd.AddCommand(openAIWhisperSegmentCmd)
+	OpenAIWhisperSegmentCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	OpenAIWhisperSegmentCmd.MarkFlagRequired("input")
 
-	openAIWhisperSegmentCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	openAIWhisperSegmentCmd.MarkFlagRequired("input")
-
-	openAIWhisperSegmentCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-	openAIWhisperSegmentCmd.MarkFlagRequired("output")
+	OpenAIWhisperSegmentCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	OpenAIWhisperSegmentCmd.MarkFlagRequired("output")
 }

@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var extractAudioCmd = &cobra.Command{
+var ExtractAudioCmd = &cobra.Command{
 	Use:   "extract-audio",
 	Short: "Extract audio from an input file",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -26,11 +26,9 @@ func extractAudio() error {
 }
 
 func init() {
-	rootCmd.AddCommand(extractAudioCmd)
+	ExtractAudioCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	ExtractAudioCmd.MarkFlagRequired("input")
 
-	extractAudioCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	extractAudioCmd.MarkFlagRequired("input")
-
-	extractAudioCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-	extractAudioCmd.MarkFlagRequired("output")
+	ExtractAudioCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	ExtractAudioCmd.MarkFlagRequired("output")
 }

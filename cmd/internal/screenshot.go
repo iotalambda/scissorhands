@@ -1,4 +1,4 @@
-package cmd
+package internal
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 var ss string
 var targetFormat string
 
-var screenshotCmd = &cobra.Command{
+var ScreenshotCmd = &cobra.Command{
 	Use:   "screenshot",
 	Short: "Take a screenshot from a video at a certain point in time",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -55,15 +55,13 @@ func screenshot() error {
 }
 
 func init() {
-	rootCmd.AddCommand(screenshotCmd)
+	ScreenshotCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	ScreenshotCmd.MarkFlagRequired("input")
 
-	screenshotCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	screenshotCmd.MarkFlagRequired("input")
+	ScreenshotCmd.Flags().StringVarP(&targetFormat, "target-format", "t", "", "Target format of the output. Allowed values: base64, file.")
 
-	screenshotCmd.Flags().StringVarP(&targetFormat, "target-format", "t", "", "Target format of the output. Allowed values: base64, file.")
+	ScreenshotCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
 
-	screenshotCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-
-	screenshotCmd.Flags().StringVarP(&ss, "seek-start", "s", "", "Seek start, for example \"00:59:59.999\".")
-	screenshotCmd.MarkFlagRequired("ss")
+	ScreenshotCmd.Flags().StringVarP(&ss, "seek-start", "s", "", "Seek start, for example \"00:59:59.999\".")
+	ScreenshotCmd.MarkFlagRequired("ss")
 }
