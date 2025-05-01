@@ -7,32 +7,20 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"scissorhands/config"
+	"scissorhands/stuff"
 
 	"github.com/spf13/cobra"
 )
 
-var segmentCmd = &cobra.Command{
-	Use:   "segment",
+var openAIWhisperSegmentCmd = &cobra.Command{
+	Use:   "openai-whisper-segment",
 	Short: "Segment an audio file by words",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return segment()
+		return openAIWhisperSegment()
 	},
 }
 
-func segment() error {
-	switch service {
-	case "openai-whisper":
-		if err := segmentWithOpenAIWhisper(); err != nil {
-			return fmt.Errorf("segment with OpenAI Whisper: %v", err)
-		}
-	default:
-		return fmt.Errorf("unrecognized service: %v", service)
-	}
-	return nil
-}
-
-func segmentWithOpenAIWhisper() error {
+func openAIWhisperSegment() error {
 	var reqBuf bytes.Buffer
 	w := multipart.NewWriter(&reqBuf)
 	defer w.Close()
@@ -78,7 +66,7 @@ func segmentWithOpenAIWhisper() error {
 		return fmt.Errorf("create req: %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+config.Global.OpenAIApiKey)
+	req.Header.Set("Authorization", "Bearer "+stuff.Global.OpenAIApiKey)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	client := &http.Client{}
@@ -99,14 +87,11 @@ func segmentWithOpenAIWhisper() error {
 }
 
 func init() {
-	rootCmd.AddCommand(segmentCmd)
+	rootCmd.AddCommand(openAIWhisperSegmentCmd)
 
-	segmentCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	segmentCmd.MarkFlagRequired("input")
+	openAIWhisperSegmentCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	openAIWhisperSegmentCmd.MarkFlagRequired("input")
 
-	segmentCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-	segmentCmd.MarkFlagRequired("output")
-
-	segmentCmd.Flags().StringVarP(&service, "service", "s", "", "Service to use for segmentation. Allowed values: openai-whisper.")
-	segmentCmd.MarkFlagRequired("service")
+	openAIWhisperSegmentCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	openAIWhisperSegmentCmd.MarkFlagRequired("output")
 }

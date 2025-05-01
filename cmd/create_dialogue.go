@@ -9,18 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ss string
-var targetFormat string
+var azureSpeechDiarizationInput string
+var openAIWhisperSegmentationInput string
 
-var screenshotCmd = &cobra.Command{
-	Use:   "screenshot",
-	Short: "Take a screenshot from a video at a certain point in time",
+var createDialogueCmd = &cobra.Command{
+	Use:   "create-dialogue",
+	Short: "",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return screenshot()
+		return createDialogue()
 	},
 }
 
-func screenshot() error {
+func createDialogue() error {
 	cmdArgs := []string{"-ss", ss, "-i", input, "-vframes", "1"}
 	switch targetFormat {
 	case "base64":
@@ -55,15 +55,15 @@ func screenshot() error {
 }
 
 func init() {
-	rootCmd.AddCommand(screenshotCmd)
+	rootCmd.AddCommand(createDialogueCmd)
 
-	screenshotCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	screenshotCmd.MarkFlagRequired("input")
+	createDialogueCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	createDialogueCmd.MarkFlagRequired("input")
 
-	screenshotCmd.Flags().StringVarP(&targetFormat, "target-format", "t", "", "Target format of the output. Allowed values: base64, file.")
+	createDialogueCmd.Flags().StringVarP(&targetFormat, "target-format", "t", "", "Target format of the output. Allowed values: base64, file.")
 
-	screenshotCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	createDialogueCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
 
-	screenshotCmd.Flags().StringVarP(&ss, "seek-start", "s", "", "Seek start, for example \"00:59:59.999\".")
-	screenshotCmd.MarkFlagRequired("ss")
+	createDialogueCmd.Flags().StringVarP(&ss, "seek-start", "s", "", "Seek start, for example \"00:59:59.999\".")
+	createDialogueCmd.MarkFlagRequired("ss")
 }

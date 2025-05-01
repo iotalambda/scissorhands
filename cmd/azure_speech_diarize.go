@@ -8,32 +8,20 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"scissorhands/config"
+	"scissorhands/stuff"
 
 	"github.com/spf13/cobra"
 )
 
-var diarizeCmd = &cobra.Command{
-	Use:   "diarize",
+var azureSpeechDiarizeCmd = &cobra.Command{
+	Use:   "azure-speech-diarize",
 	Short: "Diarize an audio file by speakers",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return diarize()
+		return azureSpeechDiarize()
 	},
 }
 
-func diarize() error {
-	switch service {
-	case "azure-speech":
-		if err := diarizeWithAzureSpeechService(); err != nil {
-			return fmt.Errorf("diarize with Azure Speech Service: %v", err)
-		}
-	default:
-		return fmt.Errorf("unrecognized service: %v", service)
-	}
-	return nil
-}
-
-func diarizeWithAzureSpeechService() error {
+func azureSpeechDiarize() error {
 	var reqBuf bytes.Buffer
 	w := multipart.NewWriter(&reqBuf)
 	defer w.Close()
@@ -84,7 +72,7 @@ func diarizeWithAzureSpeechService() error {
 		return fmt.Errorf("create req: %v", err)
 	}
 
-	req.Header.Set("Ocp-Apim-Subscription-Key", config.Global.AzureSpeechServiceKey)
+	req.Header.Set("Ocp-Apim-Subscription-Key", stuff.Global.AzureSpeechServiceKey)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	client := &http.Client{}
@@ -105,16 +93,13 @@ func diarizeWithAzureSpeechService() error {
 }
 
 func init() {
-	rootCmd.AddCommand(diarizeCmd)
+	rootCmd.AddCommand(azureSpeechDiarizeCmd)
 
-	diarizeCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
-	diarizeCmd.MarkFlagRequired("input")
+	azureSpeechDiarizeCmd.Flags().StringVarP(&input, "input", "i", "", "Input file path.")
+	azureSpeechDiarizeCmd.MarkFlagRequired("input")
 
-	diarizeCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
-	diarizeCmd.MarkFlagRequired("output")
+	azureSpeechDiarizeCmd.Flags().StringVarP(&output, "output", "o", "", "Output file path.")
+	azureSpeechDiarizeCmd.MarkFlagRequired("output")
 
-	diarizeCmd.Flags().StringVarP(&service, "service", "s", "", "Service to use for diarization. Allowed values: azure-speech.")
-	diarizeCmd.MarkFlagRequired("service")
-
-	diarizeCmd.Flags().IntVarP(&maxSpeakers, "max-speakers", "m", 5, "Maximum number of possible speakers to evaluate.")
+	azureSpeechDiarizeCmd.Flags().IntVarP(&maxSpeakers, "max-speakers", "m", 5, "Maximum number of possible speakers to evaluate.")
 }
