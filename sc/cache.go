@@ -1,4 +1,4 @@
-package cache
+package sc
 
 import (
 	"crypto/md5"

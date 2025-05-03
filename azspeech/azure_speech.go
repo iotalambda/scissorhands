@@ -8,7 +8,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"scissorhands/config"
 	"scissorhands/sc"
 )
 
@@ -63,7 +62,7 @@ func Diarize(srcPath string, maxSpeakers int) (*Diarization, error) {
 		return nil, fmt.Errorf("create req: %v", err)
 	}
 
-	req.Header.Set("Ocp-Apim-Subscription-Key", config.Global.AzureSpeechServiceKey)
+	req.Header.Set("Ocp-Apim-Subscription-Key", sc.GlobalConfig.AzureSpeechServiceKey)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	client := &http.Client{}
@@ -141,10 +140,6 @@ func (src *Diarization) MapToScissorhands() (*sc.Diarization, error) {
 	tgt := sc.Diarization{
 		DurationMilliseconds: src.DurationMilliseconds,
 	}
-	for _, combinedPhraseSrc := range src.CombinedPhrases {
-		combinedPhraseTgt := sc.DiarizationCombinedPhrase(combinedPhraseSrc)
-		tgt.CombinedPhrases = append(tgt.CombinedPhrases, combinedPhraseTgt)
-	}
 	for _, phraseSrc := range src.Phrases {
 		phraseTgt := sc.DiarizationPhrase{
 			Speaker:              fmt.Sprint(phraseSrc.Speaker),
@@ -153,10 +148,6 @@ func (src *Diarization) MapToScissorhands() (*sc.Diarization, error) {
 			Text:                 phraseSrc.Text,
 			Locale:               phraseSrc.Locale,
 			Confidence:           phraseSrc.Confidence,
-		}
-		for _, wordSrc := range phraseSrc.Words {
-			wordTgt := sc.DiarizationPhraseWord(wordSrc)
-			phraseTgt.Words = append(phraseTgt.Words, wordTgt)
 		}
 		tgt.Phrases = append(tgt.Phrases, phraseTgt)
 	}

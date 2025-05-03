@@ -7,7 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"scissorhands/config"
+	"scissorhands/sc"
 
 	"github.com/spf13/cobra"
 )
@@ -66,7 +66,7 @@ func openAIWhisperSegment() error {
 		return fmt.Errorf("create req: %v", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+config.Global.OpenAIApiKey)
+	req.Header.Set("Authorization", "Bearer "+sc.GlobalConfig.OpenAIApiKey)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	client := &http.Client{}

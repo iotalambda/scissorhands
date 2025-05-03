@@ -1,14 +1,16 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"scissorhands/azspeech"
-	"scissorhands/cache"
 	"scissorhands/ffmpeg"
 	"scissorhands/sc"
+	"strings"
 
+	"github.com/openai/openai-go"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +23,10 @@ var inferDialogueCmd = &cobra.Command{
 }
 
 func inferDialogue() error {
-	cacheDirPath, err := cache.EnsureCacheDir(input)
+	ctx := context.Background()
+	unknownSpeaker := "<UNKNOWN>"
+
+	cacheDirPath, err := sc.EnsureCacheDir(input)
 	if err != nil {
 		return fmt.Errorf("ensure cache dir: %v", err)
 	}
@@ -63,10 +68,10 @@ func inferDialogue() error {
 			return fmt.Errorf("map azure speech to scissorhands diarization file: %v", err)
 		}
 
-		// Clear Azure Speech speaker information. It's unreliable.
+		// Mark Azure Speech speaker information as unknown. The results are unreliable.
 		for pIx := range scissorhandsDiarization.Phrases {
 			p := &scissorhandsDiarization.Phrases[pIx]
-			p.Speaker = ""
+			p.Speaker = unknownSpeaker
 		}
 
 		if err = scissorhandsDiarization.Write(scissorhandsDiarizationPath); err != nil {
@@ -82,24 +87,78 @@ func inferDialogue() error {
 		}
 	}
 
+	// TODO: detect freeze frame segments -> fill narrator parts
+
 	durationMs, err := ffmpeg.DurationMs(input)
 	if err != nil {
 		return fmt.Errorf("ffprobe duration ms: %v", err)
 	}
 
 	nScreenshots := 10
-	htmlStr := "<html>"
-	for i := range nScreenshots {
-		timeScreenshotMs := (durationMs / nScreenshots) * i
-		timeScreenshotSs := ffmpeg.MsToSeek(timeScreenshotMs)
-		screenshot, err := ffmpeg.Screenshot(timeScreenshotSs, input)
-		if err != nil {
-			return fmt.Errorf("ffmpeg screenshot %v: %v", i, err)
+
+	// Overall description
+	{
+		client := sc.NewOpenAIClient()
+		messages := []openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(`You are an assistant tasked with producing a concise description of a video. Your description will be used by another AI agent responsible for video editing and diarization.  
+For each video, you will receive a set of screenshots, the transcription, and the video's duration.
+
+Your response must follow this XML structure:
+
+<VideoDescription>
+    <Summary>Brief summary of the overall content</Summary>
+    <Individuals>
+        <Individual>
+            <Name>Description or name of the individual</Name>
+            <Role>Role or function (e.g., narrator, speaker, host, interviewee)</Role>
+        </Individual>
+        <!-- Repeat <Individual> for each individual -->
+    </Individuals>
+</VideoDescription>
+
+Clearly identify all individuals present or speaking. Prioritize listing everyone who speaks or is likely to speak to assist the diarization process.  
+If any part of the transcription includes dialogue phrased in the passive voice or from a third-person perspective (e.g., "Next, the procedure is performed"), and no speaker is explicitly identified, treat it as narration. Assume such narration may be provided by a narrator not shown in the video.  
+Be brief but complete. Do not include unrelated commentary.`),
 		}
-		htmlStr += fmt.Sprintf("<br/><img src=\"%v\" />", screenshot)
+
+		scissorhandsDiarizationString, err := scissorhandsDiarization.String()
+		if err != nil {
+			return fmt.Errorf("scissorhands diarization string: %v", err)
+		}
+
+		userMessageParts := []openai.ChatCompletionContentPartUnionParam{
+			openai.TextContentPart(fmt.Sprintf("The video duration is %v ms.", durationMs)),
+			openai.TextContentPart(fmt.Sprintf("Here's the video diarization. Unknown speakers are marked with %v: %v", unknownSpeaker, scissorhandsDiarizationString)),
+		}
+
+		var htmlB strings.Builder
+		htmlB.WriteString("<html>")
+		for i := range nScreenshots {
+			timeScreenshotMs := (durationMs / nScreenshots) * i
+			timeScreenshotSs := ffmpeg.MsToSeek(timeScreenshotMs)
+			url, err := ffmpeg.Screenshot(timeScreenshotSs, input)
+			if err != nil {
+				return fmt.Errorf("ffmpeg screenshot %v: %v", i, err)
+			}
+			userMessageParts = append(
+				userMessageParts,
+				openai.TextContentPart(fmt.Sprintf("Here's screenshot %v:", i+1)),
+				openai.ImageContentPart(openai.ChatCompletionContentPartImageImageURLParam{
+					URL: url,
+				}))
+			htmlB.WriteString(fmt.Sprintf("<br/><img src=\"%v\" />", url))
+		}
+		htmlB.WriteString("</html>")
+		//os.WriteFile(filepath.Join(".temp", "output", "screenshots.html"), []byte(htmlB.String()), 0644)
+		messages = append(messages, openai.UserMessage(userMessageParts))
+
+		resp, err := client.Chat.Completions.New(ctx, sc.NewOpenAIChatCompletionNewParams(messages))
+		if err != nil {
+			return fmt.Errorf("overall description chat completion: %v", err)
+		}
+
+		fmt.Printf("LLM> %v\n", resp.Choices[0].Message.Content)
 	}
-	htmlStr += "</html>"
-	//os.WriteFile(filepath.Join(".temp", "output", "site.html"), []byte(htmlStr), 0644)
 
 	return nil
 }

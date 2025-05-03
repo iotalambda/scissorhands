@@ -3,7 +3,7 @@ package cmd
 import (
 	"log"
 	internal "scissorhands/cmd/internal"
-	"scissorhands/config"
+	"scissorhands/sc"
 
 	"github.com/spf13/cobra"
 )
@@ -12,7 +12,7 @@ var rootCmd = &cobra.Command{
 	Use:   "scissorhands",
 	Short: "A CLI tool for smart video editing",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return config.InitConfig()
+		return sc.InitConfig()
 	},
 }
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
-	"scissorhands/config"
+	"scissorhands/sc"
 
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
@@ -33,7 +33,7 @@ func prompt() error {
 }
 
 func promptWithOpenAIGPT4o() error {
-	client := openai.NewClient(option.WithAPIKey(config.Global.OpenAIApiKey))
+	client := openai.NewClient(option.WithAPIKey(sc.GlobalConfig.OpenAIApiKey))
 	ctx := context.Background()
 	question := "Can you list the files and directories in the `/workspaces` directory, please."
 	fmt.Println("YOU> " + question)
